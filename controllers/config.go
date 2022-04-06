@@ -12,16 +12,16 @@ import (
 )
 
 type OperatorConfig struct {
-	PoolConfig      PoolConfig                       `json:"pool"`
-	ClowdEnvSpec    clowder.ClowdEnvironmentSpec     `json:"clowdEnv"`
-	FrontendEnvSpec frontend.FrontendEnvironmentSpec `json:"frontendEnv"`
-	LimitRange      core.LimitRange                  `json:"limitRange"`
-	ResourceQuotas  core.ResourceQuotaList           `json:"resourceQuotas"`
+	PoolConfig      PoolConfig                       `yaml:"pool"`
+	ClowdEnvSpec    clowder.ClowdEnvironmentSpec     `yaml:"clowdEnv"`
+	FrontendEnvSpec frontend.FrontendEnvironmentSpec `yaml:"frontendEnv"`
+	LimitRange      core.LimitRange                  `yaml:"limitRange"`
+	ResourceQuotas  core.ResourceQuotaList           `yaml:"resourceQuotas"`
 }
 
 type PoolConfig struct {
-	Size  int  `json:"size"`
-	Local bool `json:"local"`
+	Size  int  `yaml:"size"`
+	Local bool `yaml:"local"`
 }
 
 func getConfig() OperatorConfig {
