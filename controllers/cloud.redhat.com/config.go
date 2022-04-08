@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	"os"
+	"strings"
 
 	clowder "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	frontend "github.com/RedHatInsights/frontend-operator/api/v1alpha1"
@@ -12,35 +12,32 @@ import (
 )
 
 type OperatorConfig struct {
-	PoolConfig      PoolConfig                       `json:"pool"`
-	ClowdEnvSpec    clowder.ClowdEnvironmentSpec     `json:"clowdEnv"`
-	FrontendEnvSpec frontend.FrontendEnvironmentSpec `json:"frontendEnv"`
-	LimitRange      core.LimitRange                  `json:"limitRange"`
-	ResourceQuotas  core.ResourceQuotaList           `json:"resourceQuotas"`
+	PoolConfig      PoolConfig                       `yaml:"pool"`
+	ClowdEnvSpec    clowder.ClowdEnvironmentSpec     `yaml:"clowdEnv"`
+	FrontendEnvSpec frontend.FrontendEnvironmentSpec `yaml:"frontendEnv"`
+	LimitRange      core.LimitRange                  `yaml:"limitRange"`
+	ResourceQuotas  core.ResourceQuotaList           `yaml:"resourceQuotas"`
 }
 
 type PoolConfig struct {
-	Size  int  `json:"size"`
-	Local bool `json:"local"`
+	Size  int  `yaml:"size"`
+	Local bool `yaml:"local"`
 }
 
 func getConfig() OperatorConfig {
-	configPath := "ephemeral_config.json"
+	configPath := "config/environment_config.yaml"
+	configMapFile := configPath[strings.LastIndex(configPath, "/")+1:]
 
-	if path := os.Getenv("NS_OPERATOR_CONFIG"); path != "" {
-		configPath = path
-	}
-
-	fmt.Printf("Loading config from: %s\n", configPath)
-
-	jsonData, err := ioutil.ReadFile(configPath)
+	configMapData, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		fmt.Printf("Config file %s not found\n", configPath)
+		fmt.Printf("%s not found\n", configMapFile)
 		return OperatorConfig{}
+	} else {
+		fmt.Printf("Loading config from: %s\n", configMapFile)
 	}
 
 	operatorConfig := OperatorConfig{}
-	err = json.Unmarshal(jsonData, &operatorConfig)
+	err = yaml.Unmarshal(configMapData, &operatorConfig)
 	if err != nil {
 		fmt.Printf("Couldn't parse json:\n" + err.Error())
 		return OperatorConfig{}
