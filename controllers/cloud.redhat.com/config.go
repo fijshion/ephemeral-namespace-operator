@@ -26,8 +26,8 @@ type OperatorConfig struct {
 }
 
 type PoolConfig struct {
-	Size  int  `json:"size"`
-	Local bool `json:"local"`
+	Size  int  `yaml:"size"`
+	Local bool `yaml:"local"`
 }
 
 func getConfig() OperatorConfig {
