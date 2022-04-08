@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
@@ -11,37 +12,45 @@ import (
 	core "k8s.io/api/core/v1"
 )
 
+type ConfigMap struct {
+	//	Config OperatorConfig    `yaml:"environment_config.json"`
+	Cfg map[string]string `yaml:"data"`
+}
+
 type OperatorConfig struct {
-	PoolConfig      PoolConfig                       `yaml:"pool"`
-	ClowdEnvSpec    clowder.ClowdEnvironmentSpec     `yaml:"clowdEnv"`
-	FrontendEnvSpec frontend.FrontendEnvironmentSpec `yaml:"frontendEnv"`
-	LimitRange      core.LimitRange                  `yaml:"limitRange"`
-	ResourceQuotas  core.ResourceQuotaList           `yaml:"resourceQuotas"`
+	PoolConfig      PoolConfig                       `json:"Pool,omitempty"`
+	ClowdEnvSpec    clowder.ClowdEnvironmentSpec     `json:"clowdEnv"`
+	FrontendEnvSpec frontend.FrontendEnvironmentSpec `json:"frontendEnv"`
+	LimitRange      core.LimitRange                  `json:"limitRange"`
+	ResourceQuotas  core.ResourceQuotaList           `json:"resourceQuotas"`
 }
 
 type PoolConfig struct {
-	Size  int  `yaml:"size"`
-	Local bool `yaml:"local"`
+	Size  int  `json:"size"`
+	Local bool `json:"local"`
 }
 
 func getConfig() OperatorConfig {
-	configPath := "config/environment_config.yaml"
-	configMapFile := configPath[strings.LastIndex(configPath, "/")+1:]
+	configMapPath := "config/environment_config.yaml"
+	configMapFileName := configMapPath[strings.LastIndex(configMapPath, "/")+1:]
 
-	configMapData, err := ioutil.ReadFile(configPath)
+	configMapData, err := ioutil.ReadFile(configMapPath)
 	if err != nil {
-		fmt.Printf("%s not found\n", configMapFile)
+		fmt.Printf("%s not found\n", configMapFileName)
 		return OperatorConfig{}
 	} else {
-		fmt.Printf("Loading config from: %s\n", configMapFile)
+		fmt.Printf("Loading config from: %s\n", configMapFileName)
 	}
 
+	configMap := ConfigMap{}
 	operatorConfig := OperatorConfig{}
-	err = yaml.Unmarshal(configMapData, &operatorConfig)
+	err = yaml.Unmarshal(configMapData, &configMap)
 	if err != nil {
 		fmt.Printf("Couldn't parse json:\n" + err.Error())
 		return OperatorConfig{}
 	}
+
+	err = json.Unmarshal([]byte(configMap.Cfg["environment_config.json"]), &operatorConfig)
 
 	return operatorConfig
 }
